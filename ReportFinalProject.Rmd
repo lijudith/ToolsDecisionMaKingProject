@@ -1,0 +1,106 @@
+---
+title: "Final Project-Analysis of companies in Alderaan and Bespin"
+author: "Judith LI"
+date: "2022-11-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r,echo=FALSE,message=FALSE,results='hide'}
+getwd()
+```
+
+## Introcduction
+
+One of the most common tasks in engineering management is to analyse vast quantities of data to understand what’s happening and taking optimal decisions based on our findings.
+
+Laura, the new CEO of The Institute of Equality, Diversity and Inclusiveness in region Corellia has contacted us to discuss what is happening in two cities (Alderaan and Bespin). After the hard work of data collection, the new CEO has been able to collect information about the selection processes over two months. This information contains data on the candidates and their environment, the job position, the recruiting company and its environment, and whether the candidate finally received a call back on his or her application.
+
+Laura is concerned about several issues. She believes that certain companies may be biased towards some candidates because of their gender, race, or even background they come from. Laura has therefore asked us to carry out an exploratory analysis.
+
+
+## Setup the software 
+
+The software used for the development of the study and the writing of the report is R. The first step is to load the libraries :
+
+```{r,message=FALSE,results='hide'}
+library(tidyverse)
+library(tidymodels)
+library(dplyr)
+```
+
+### Importing data 
+
+We are going to load the data set and check that everything is correct. Instead of using a standard R data.frame, we have decided to use a tibble because this makes it much easier to work with large data. 
+
+```{r,echo=FALSE,results='hide'}
+mydata=read.csv("data_set.csv")%>%tibble()
+```
+
+### Cleaning of data 
+
+We are going to check if we have loaded all information from the file.
+
+```{r,echo=FALSE}
+nrow(mydata)
+ncol(mydata)
+```
+
+There are 4870 rows and 58 columns in the dataset. The right numbers according to the data source. Now, we are going to check if the type of the variables is the right one.
+
+```{r, echo=FALSE}
+str(mydata)
+```
+
+We can see that the type of the variables fits to the expected one.
+Now, we are going to check if the data at the beginning or at the end of the dataset is right.
+
+```{r,echo=FALSE}
+head(mydata[, c(3, 4, 5)], 3)
+tail(mydata[, c(3, 4, 5)], 3)
+```
+
+Theses cases are right.
+Finally, we are going to check if there is any outlier in the values we have.
+
+```{r,echo=FALSE}
+summary(mydata)
+```
+
+From the results, we can see that there are many cases with NA’s. We will have to resolve this problem. So, we are going to clean (omit) the data from NA values and recode the ‘cancelled’ column (using indexing and reassignment) for purposes of better understanding.
+
+```{r, echo=FALSE}
+mydata1=na.omit(mydata)
+
+```
+
+
+## Analysing 
+
+In order to give an explanation to Laura , we are going to answer the following questions: 
+
+1. 
+
+2. 
+
+3.
+
+4. 
+
+5.
+
+6.
+
+7.
+
+8.
+
+
+
+## Conclusion 
+
+## References 
+
