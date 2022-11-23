@@ -5,10 +5,6 @@ date: "2022-11-19"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 ```{r,echo=FALSE,message=FALSE,results='hide'}
 getwd()
 ```
@@ -30,6 +26,8 @@ The software used for the development of the study and the writing of the report
 library(tidyverse)
 library(tidymodels)
 library(dplyr)
+library(ggplot2)
+library(reshape2)
 ```
 
 ### Importing data 
@@ -49,18 +47,18 @@ nrow(mydata)
 ncol(mydata)
 ```
 
-There are 4870 rows and 58 columns in the dataset. The right numbers according to the data source. Now, we are going to check if the type of the variables is the right one.
+There are 4870 rows and 58 columns in the data set. The right numbers according to the data source. Now, we are going to check if the type of the variables is the right one.
 
 ```{r, echo=FALSE}
 str(mydata)
 ```
 
 We can see that the type of the variables fits to the expected one.
-Now, we are going to check if the data at the beginning or at the end of the dataset is right.
+Now, we are going to check if the data at the beginning or at the end of the data set is right.
 
 ```{r,echo=FALSE}
-head(mydata[, c(3, 4, 5)], 3)
-tail(mydata[, c(3, 4, 5)], 3)
+mydata%>%head(3)
+mydata%>%tail(3)
 ```
 
 Theses cases are right.
@@ -73,8 +71,7 @@ summary(mydata)
 From the results, we can see that there are many cases with NA’s. We will have to resolve this problem. So, we are going to clean (omit) the data from NA values and recode the ‘cancelled’ column (using indexing and reassignment) for purposes of better understanding.
 
 ```{r, echo=FALSE}
-mydata1=na.omit(mydata)
-
+mydata1=na.omit(mydata) # mydata sans les cases vides ....
 ```
 
 
@@ -82,25 +79,66 @@ mydata1=na.omit(mydata)
 
 In order to give an explanation to Laura , we are going to answer the following questions: 
 
-1. 
+#### 1. How many are pre-selected ? 
 
-2. 
+```{r}
+CPreselected=mydata%>%filter(call==1)
+#CPreselected%>%head(7)
 
-3.
+nrow(CPreselected) # number of preselected candidates
+```
+We have 392 candidats who are pre selected on ( nombre de candidats après avoir nettoyé les données ? ) We want to know if there is any correlation with other variables : 
 
-4. 
-
-5.
-
-6.
-
-7.
-
-8.
+```{r}
+# Correlation matrix 
+```
 
 
+#### 2. What is the common point of pre selected candidate regarding their personal context ? 
 
-## Conclusion 
+Let's see what is the common point on the 392 candidates who are pre selected. There is more female pre selected (309) rather than men (83) as we can see on the graph bellow : 
+
+```{r}
+FPreselected=CPreselected%>%filter(sex=="f")
+MPreselected=CPreselected%>%filter(sex=="m")
+#nrow(FPreselected) 
+#nrow(MPreselected)
+
+ggplot(CPreselected,aes(sex,group=sex,color=sex))+geom_bar()+labs(title = "Comparaison between pre selected men and female ")
+```
+By the same way we can see that on pre selected candidates there is more white people rather than black people between men and women pre selected candidates. And between women , we observe the same case. So, the majority of pre selected candidates are white females. 
+
+```{r}
+# Comparaison race Pre selected candidates
+ggplot(CPreselected,aes(race,group=race,color=race))+geom_bar()+labs(title = "Comparaison race between pre selected candidates")
+# Comparaison race Pre selected candidates between women
+ggplot(FPreselected,aes(race,group=race,color=race))+geom_bar()+labs(title = "Comparaison race between womens pre selected candidates")
+```
+
+
+
+
+
+
+#### 3. What is the commoun point of pre selected candidate regarding their profesional context ? 
+
+#### 4. What is the profil of the perfect candidat ? 
+
+So, after this analysis we can say that the ....
+
+#### 5. Prediction hypothesis 
+
+
+
+#### 6. Prediction linearisation
+
+#### 7. Prediction classification 
+
+#### 8. Is Laura right ?
+
+
+
+## Conclusions
 
 ## References 
 
