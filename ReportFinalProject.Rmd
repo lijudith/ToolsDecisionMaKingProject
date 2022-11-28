@@ -26,8 +26,11 @@ The software used for the development of the study and the writing of the report
 library(tidyverse)
 library(tidymodels)
 library(dplyr)
+library(janitor)
 library(ggplot2)
+library(corrplot)
 library(reshape2)
+library(gridExtra)
 ```
 
 ### Importing data 
@@ -71,53 +74,110 @@ summary(mydata)
 From the results, we can see that there are many cases with NA’s. We will have to resolve this problem. So, we are going to clean (omit) the data from NA values and recode the ‘cancelled’ column (using indexing and reassignment) for purposes of better understanding.
 
 ```{r, echo=FALSE}
-mydata1=na.omit(mydata) # mydata sans les cases vides ....
+#remove empty rows and columns
+mydata_Clean= mydata %>% remove_empty(which = c("rows","cols")) 
+# remove constant columns
+mydata_Clean=mydata %>% remove_constant()
+# NA 
+mydata_Clean=na.omit(mydata)
 ```
 
 
-## Analysing 
+## Analysing on pre selected candidates 
 
-In order to give an explanation to Laura , we are going to answer the following questions: 
+In order to give an explanation to Laura , let's analyse we are going to answer this following questions: 
+
+<ul>
+  <li>1.How many are pre-selected </li>
+  <li>2.What is the common point of pre selected candidate regarding their personal context ? </li>
+  <li>3.What is the commoun point of pre selected candidate regarding their profesional context ? </li>
+  <li>4.What is the profil of the perfect candidat ? </li>
+  <li>5.Prediction hypothesis </li>
+  <li>6.Prediction linearisation</li>
+  <li>7.Prediction classification </li>
+  <li>8.Is Laura right ?</li>
+</ul>
+
 
 #### 1. How many are pre-selected ? 
 
 ```{r}
-CPreselected=mydata%>%filter(call==1)
-#CPreselected%>%head(7)
-
-nrow(CPreselected) # number of preselected candidates
+Preselected=mydata%>%filter(call==1)
+#Preselected%>%head(7)
+nrow(Preselected) # number of preselected candidates
 ```
-We have 392 candidats who are pre selected on ( nombre de candidats après avoir nettoyé les données ? ) We want to know if there is any correlation with other variables : 
+
+We have 392 candidates who are pre selected on ( nombre de candidats après avoir nettoyé les données ? )
+
+We want to know if there is any correlation between pre selected candidates and the parameters regarding candidates's resume : ( expliqué qu'on n'a pas fait la corrélation avec nom sexe et race)
+According to the correlation matrix , there is some correlation with the variables : Call ( It's correlated with Special_skill,honors and years_exp) 
 
 ```{r}
-# Correlation matrix 
+# Correlation matrix for information regarding the candidates's resume
+mydataCor=mydata%>%select(-(first_name:race))%>%select((education:call))
+
+cormat = round(cor(mydataCor),2) # Calculate the Correlation Matrix
+mydataCor_corrMat =melt(cormat) # Reshape the previous matrix
+
+mydataCor_corrMat=cor(as.matrix(na.omit(mydataCor)))
+corrplot(mydataCor_corrMat,type="upper",tl.col="black",tl.cex = 0.5)
+```
+
+Let's study this parameters .As we can see on graphics bellow , the fact to have specials skills or honors don't influence a lot pre selections. Indeed, (nombre) -- en accord avec la matrix 
+
+Concerning the year experiences : entre 0 et 20 ans 
+
+
+```{r}
+#special_skill
+p1=ggplot(mydata, aes(x=call, y=special_skills)) + geom_bar(stat="identity", color="green4")+
+  labs(title = "Number of candidates who is calling because of special skills ")+
+  theme_bw()
+# honors 
+p2=ggplot(mydata, aes(x=call, y=honors)) + geom_bar(stat="identity", color="green4")+
+  labs(title = "Number of candidates who is calling because of honors ")+
+  theme_bw()
+# years_exp 
+p3=ggplot(mydata, aes(x=years_exp, y=call)) + geom_bar(stat="identity", color="green4")+
+  labs(title = "Number of pre selected candidates by years of experience")+
+  scale_y_continuous(limits= c(0, 50)) +
+  scale_x_continuous(limits = c(0, 50))+
+  theme_bw()
+grid.arrange(p1, p2, p3,ncol=2)
 ```
 
 
 #### 2. What is the common point of pre selected candidate regarding their personal context ? 
 
-Let's see what is the common point on the 392 candidates who are pre selected. There is more female pre selected (309) rather than men (83) as we can see on the graph bellow : 
+Let's see what is the common point on the 392 candidates who are pre selected. We are going to focus our analysis in this section, on the variables : sex,race and first_name.
+
+There is more female pre selected (309) rather than men (83) as we can see on the graph bellow : 
 
 ```{r}
-FPreselected=CPreselected%>%filter(sex=="f")
-MPreselected=CPreselected%>%filter(sex=="m")
+FPreselected=Preselected%>%filter(sex=="f")
+MPreselected=Preselected%>%filter(sex=="m")
 #nrow(FPreselected) 
 #nrow(MPreselected)
 
-ggplot(CPreselected,aes(sex,group=sex,color=sex))+geom_bar()+labs(title = "Comparaison between pre selected men and female ")
+ggplot(Preselected,aes(sex,group=sex,color=sex))+geom_bar()+labs(title = "Comparaison between pre selected men and female ")+theme_bw() 
+
 ```
 By the same way we can see that on pre selected candidates there is more white people rather than black people between men and women pre selected candidates. And between women , we observe the same case. So, the majority of pre selected candidates are white females. 
 
 ```{r}
 # Comparaison race Pre selected candidates
-ggplot(CPreselected,aes(race,group=race,color=race))+geom_bar()+labs(title = "Comparaison race between pre selected candidates")
+p4=ggplot(Preselected,aes(race,group=race,color=race))+geom_bar()+labs(title = "Comparaison race between pre selected candidates")+theme_bw()
 # Comparaison race Pre selected candidates between women
-ggplot(FPreselected,aes(race,group=race,color=race))+geom_bar()+labs(title = "Comparaison race between womens pre selected candidates")
+p5=ggplot(FPreselected,aes(race,group=race,color=race))+geom_bar()+labs(title = "Comparaison race between womens pre selected candidates")+theme_bw()
+grid.arrange(p4, p5, ncol=1)
 ```
 
 
+Let's see if there is any link with pre selected candidates and their first_name : 
 
+[in general]
 
+[ Dans le cas des filles blanches ? ]
 
 
 #### 3. What is the commoun point of pre selected candidate regarding their profesional context ? 
@@ -125,9 +185,18 @@ ggplot(FPreselected,aes(race,group=race,color=race))+geom_bar()+labs(title = "Co
 #### 4. What is the profil of the perfect candidat ? 
 
 So, after this analysis we can say that the ....
+white female - experience 0-20 and names ?
 
 #### 5. Prediction hypothesis 
 
+```{r}
+# hypt perso context
+```
+
+
+```{r}
+# hypt pro context
+```
 
 
 #### 6. Prediction linearisation
@@ -136,6 +205,8 @@ So, after this analysis we can say that the ....
 
 #### 8. Is Laura right ?
 
+
+## Analysing on no pre selected candidates 
 
 
 ## Conclusions
