@@ -1,0 +1,131 @@
+---
+title: "Project"
+author: "Axel Lucas"
+date: "2022-11-29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Let's import libraries for the next part
+```{r, message=FALSE, warning=FALSE}
+library(tidymodels)
+library(tidyverse)
+library(janitor)
+library(lubridate)
+library(gridExtra)
+library(readr)
+```
+## Let's import Data 
+```{r, message=FALSE, warning=FALSE}
+getwd()
+mydata<-read.csv("data_set.csv",sep=",")
+ 
+```
+## 1-Study of the difference between black and white to the preselection
+**Just before starting, it's important to count how many black and whites do we have, to be sure that we compare the same things.**
+```{r}
+nrow(mydata%>%filter(race=="b"))
+nrow(mydata%>%filter(race=="w"))
+```
+**It's interesting to see that we have the same number of blacks and whites persons.**
+
+
+
+## 1.A study of the education of the different race
+**Through this part, we try to study the studies of the different races and to see if there is a race which has a better level of study or not than another one.** 
+**To do this, we are going to carry out a T.Test to see if the study averages are identical.**
+**H0: The education means are the same at 5%.**
+**H1: The means are not the same.**
+
+```{r}
+myB<-mydata%>%filter(race=="b")
+myW<-mydata%>%filter(race=="w")
+## Testing hypothesis
+t.test(myB$education, myW$education, alternative = "two.sided", paired = TRUE, var.equal = TRUE, conf.level = 0.95)
+```
+**We realize that the "p-value">0.05 so we can accept H0, so both races have on average the same level of study. We can see it below with this graph, where we have in ordinate the number of students with the levels of study. We can see that they have about the same level of study. So the level of study being the same, it should not be a criterion for differences on the selections.**
+
+```{r}
+mydata %>% ggplot(aes(x=education, fill=race)) + geom_histogram( position=position_dodge())
+```
+
+## 1-B Study of the experience of different race 
+**Through this part, we try to determine if there is a difference between the number of years of the different breeds. To do this, we will look at whether the number of years of experience and the number of experiences are related. Then, we will look through a T.Test if the average of the experiences of the whites is equal to that of the blacks **
+**First we will do a regression to see if the number of experiences and the number of years of experience are related. **
+**For this, we define the following hypotheses.** 
+**H0: the two variables are related** 
+**H1: They are not related **
+```{r}
+mtcars03 <- lm(n_jobs ~ years_exp, data=mydata)
+summary(mtcars03)
+ggplot(mydata, aes(n_jobs, years_exp)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw()
+```
+
+
+
+**We see that pr<0.05 so we validate H0 so we can say that the number of experiences and the number of years of experience are linked**
+
+**In order to simplify, we will use only the number of years of experience. In our next test, we will see if the number of years of experience is on average equal for both races.** 
+**Avec:** 
+**H0: The number of experiences means are the same at 5%.**
+**H1:  The number of experiences means are not the same.**
+```{r}
+
+## Testing hypothesis
+t.test(myB$years_exp, myW$years_exp, alternative = "two.sided", paired = TRUE, var.equal = TRUE, conf.level = 0.95)
+```
+**We realize that the p-value>0.05 so the average of experience of both breeds is the same.**
+**Also, we can see below that there are also the same repartition in number of jobs for blacks and white.  The number of experiments will not be a reason to select more one race or another. **
+
+```{r}
+mydata %>% ggplot(aes(x=n_jobs, fill=race)) + geom_histogram( position=position_dodge())
+```
+
+
+
+## 1-C Repartition of the race per names
+**Through this patient, we want to see if a name is carried by a race or if a white and a black can have the same first name. **
+```{r}
+myDF1<-data_frame(mydata$first_name,mydata$race,0)
+colnames(myDF1)<-c("first_name","race","x")
+row<- nrow(mydata)
+for (i in 1:row){
+  dataD<-mydata %>% filter(first_name==mydata[i,13] & race==mydata[i,15])
+  myDF1[i,3]<-nrow(dataD)
+}
+dataB<-myDF1%>%group_by(first_name,race)%>%summarize(number=mean(x))
+
+dataB %>% ggplot(aes(x=first_name, y=number, fill=race)) + geom_bar(stat="identity", position=position_dodge())+theme(axis.text.x = element_text(angle=90))
+```
+
+
+**We realize that there are no blacks and whites who have the same first name. The first name can therefore be a discriminating factor.** 
+
+## 1-D study of the pre-selected persons
+
+**We want to see if whites are more often pre-selected than blacks.** 
+**For that, we have realized a T.Test with as hypothesis: **
+**H0: whites are more often called than blacks within 5%.**
+**H1: it is the opposite of H0**
+
+```{r}
+t.test(myB$call, myW$call, alternative = "greater", paired = FALSE, var.equal = TRUE, conf.level = 0.95)
+
+```
+
+**We see that p.Value>0,05 so on average whites are more often pre-selected than blacks. in fact, 9.6% of whites were pre-selected against 6.5% of blacks  **
+```{R}
+test1<-mydata%>%group_by(education, race)%>%summarise(pre_selected_mean=mean(call))
+test1 %>% ggplot(aes(x=education, y=pre_selected_mean, fill=race)) + geom_bar(stat="identity", position=position_dodge())
+```
+**Moreover, when we look at the distribution of the preselected, we realize that blacks are more often selected when they have 0 or 1 of education but then it is very largely the whites who are preselected. **
+
+## 1-E Conclusion
+
+**We realize that whites are more advantaged than blacks. In fact, despite the fact that blacks and whites have the same level of education and the same number of jobs, whites are called much more often. This could be explained by the fact that the first names are either given to whites or blacks, which makes it easier to discriminate.**
+
