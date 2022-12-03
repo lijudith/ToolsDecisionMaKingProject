@@ -1,6 +1,6 @@
 ---
 title: "Final Project-Analysis of companies in Alderaan and Bespin"
-author: "Judith LI"
+author: "Batillat Kim , Lucas Axel , Li Judith "
 date: "2022-11-19"
 output: html_document
 ---
@@ -22,70 +22,69 @@ Laura is concerned about several issues. She believes that certain companies may
 
 The software used for the development of the study and the writing of the report is R. The first step is to load the libraries :
 
-```{r,message=FALSE,results='hide'}
+```{r,message=FALSE,results='hide',warning=FALSE}
 library(tidyverse)
 library(tidymodels)
 library(dplyr)
 library(janitor)
 library(ggplot2)
-library(corrplot)
 library(reshape2)
 library(gridExtra)
+library(corrplot)
+# logistic regression 
+library(data.table)
+library(ggcorrplot)
+library(mice)
+library(VIM)
+library(caTools)
+library(ROCR)
+# tree
+library(rpart)
+library(rpart.plot)
+library(rattle)
 ```
 
 ### Importing data 
 
 We are going to load the data set and check that everything is correct. Instead of using a standard R data.frame, we have decided to use a tibble because this makes it much easier to work with large data. 
 
-```{r,echo=FALSE,results='hide'}
+```{r}
 mydata=read.csv("data_set.csv")%>%tibble()
 ```
+
+In this set data of data, we have information about : candidate's resume , if the candidate was pre-selected or not , candidate's context and environment, the job position,the employer and the employer's context and environment .
 
 ### Cleaning of data 
 
 We are going to check if we have loaded all information from the file.
 
-```{r,echo=FALSE}
+```{r}
 nrow(mydata)
 ncol(mydata)
 ```
 
 There are 4870 rows and 58 columns in the data set. The right numbers according to the data source. Now, we are going to check if the type of the variables is the right one.
 
-```{r, echo=FALSE}
+```{r,results='hide'}
 str(mydata)
 ```
 
 We can see that the type of the variables fits to the expected one.
 Now, we are going to check if the data at the beginning or at the end of the data set is right.
 
-```{r,echo=FALSE}
+```{r}
 mydata%>%head(3)
 mydata%>%tail(3)
 ```
 
 Theses cases are right.
-Finally, we are going to check if there is any outlier in the values we have.
-
-```{r,echo=FALSE}
-summary(mydata)
-```
-
-From the results, we can see that there are many cases with NA’s. We will have to resolve this problem. So, we are going to clean (omit) the data from NA values and recode the ‘cancelled’ column (using indexing and reassignment) for purposes of better understanding.
-
-```{r, echo=FALSE}
-#remove empty rows and columns
-mydata_Clean= mydata %>% remove_empty(which = c("rows","cols")) 
-# remove constant columns
-mydata_Clean=mydata %>% remove_constant()
-# NA 
-mydata_Clean=na.omit(mydata)
-```
 
 
 ## Analysing on pre selected candidates 
 
 In order to give an explanation to Laura , let's analyse we are going to answer this following questions: 
+
+## A revoir 
 
 <ul>
   <li>1.How many are pre-selected </li>
@@ -99,34 +98,33 @@ In order to give an explanation to Laura , let's analyse we are going to answer 
 </ul>
 
 
-#### 1. How many are pre-selected ? 
+#### 1. Observations regarding the candidate's resume 
+
+###### a) How many candidates are pre-selected ? 
+
+We have 392 candidates who are pre selected on 4870 candidates. 
 
 ```{r}
 Preselected=mydata%>%filter(call==1)
-#Preselected%>%head(7)
-nrow(Preselected) # number of preselected candidates
+nrow(Preselected) # number of pre selected candidates
 ```
 
-We have 392 candidates who are pre selected on ( nombre de candidats après avoir nettoyé les données ? )
+First, we want to know if there is any correlation between pre selected candidates and the different variables. Regarding information on candidate's resume , there is some correlation between the applicant who was called back ( Call ) and the variables : years_exp,volunteer,special_skills.
 
-We want to know if there is any correlation between pre selected candidates and the parameters regarding candidates's resume : ( expliqué qu'on n'a pas fait la corrélation avec nom sexe et race)
-According to the correlation matrix , there is some correlation with the variables : Call ( It's correlated with Special_skill,honors and years_exp) 
-
-```{r}
-# Correlation matrix for information regarding the candidates's resume
+```{r,message=FALSE,warning=False}
 mydataCor=mydata%>%select(-(first_name:race))%>%select((education:call))
 
 cormat = round(cor(mydataCor),2) # Calculate the Correlation Matrix
 mydataCor_corrMat =melt(cormat) # Reshape the previous matrix
-
+#mydataCor_corrMat
 mydataCor_corrMat=cor(as.matrix(na.omit(mydataCor)))
 corrplot(mydataCor_corrMat,type="upper",tl.col="black",tl.cex = 0.5)
+
 ```
 
-Let's study this parameters .As we can see on graphics bellow , the fact to have specials skills or honors don't influence a lot pre selections. Indeed, (nombre) -- en accord avec la matrix 
+But this correlation are not so strong so let's study this correlation briefly. As we can see on graphics bellow , the fact to have specials skills or honors don't influence a lot pre selections. Indeed, we have a consequent number of applicant who was called back without any specials skills or honors. 
 
-Concerning the year experiences : entre 0 et 20 ans 
-
+Concerning the year experiences, there is beginners as well as professionals applicant who was called back. But most of them , have a average of years experience equal to 8 years. 
 
 ```{r}
 #special_skill
@@ -146,22 +144,20 @@ p3=ggplot(mydata, aes(x=years_exp, y=call)) + geom_bar(stat="identity", color="g
 grid.arrange(p1, p2, p3,ncol=2)
 ```
 
+Let's see what is the common point on the 392 candidates on their resume who are pre selected regarding their : sex,race and first_name. 
 
-#### 2. What is the common point of pre selected candidate regarding their personal context ? 
+###### a) Acoording to Laura believes is their some biasement towards some candidates because of their gender, race or background ? 
 
-Let's see what is the common point on the 392 candidates who are pre selected. We are going to focus our analysis in this section, on the variables : sex,race and first_name.
-
-There is more female pre selected (309) rather than men (83) as we can see on the graph bellow : 
+**analysis on the gender of pre selected candidates** 
+There is more female pre selected:309 rather than men:83 as we can see on the graph bellow :
 
 ```{r}
 FPreselected=Preselected%>%filter(sex=="f")
 MPreselected=Preselected%>%filter(sex=="m")
-#nrow(FPreselected) 
-#nrow(MPreselected)
-
 ggplot(Preselected,aes(sex,group=sex,color=sex))+geom_bar()+labs(title = "Comparaison between pre selected men and female ")+theme_bw() 
-
 ```
+
+**analysis on the race of pre selected candidates** 
 By the same way we can see that on pre selected candidates there is more white people rather than black people between men and women pre selected candidates. And between women , we observe the same case. So, the majority of pre selected candidates are white females. 
 
 ```{r}
@@ -173,43 +169,135 @@ grid.arrange(p4, p5, ncol=1)
 ```
 
 
+```{r,warning=FALSE,message=FALSE}
+# Genre dans les deux filles années d'expériences appel 
+
+dataB=mydata%>%select(city,call,sex,years_exp)%>%filter(city=='b') # city b 
+dataB=dataB%>%group_by(years_exp,sex)
+dataB=dataB%>%summarise(total_call=sum(call))
+
+pB= dataB%>%ggplot(aes(x=years_exp,y=total_call,fill=sex))+geom_bar(stat="identity",position=position_dodge())+theme_bw()+labs(title = "Dans la ville B ")
+
+dataC=mydata%>%select(city,call,sex,years_exp)%>%filter(city=='c') # city c
+dataC=dataC%>%group_by(years_exp,sex)
+dataC=dataC%>%summarise(total_call=sum(call))
+
+pC=dataC%>%ggplot(aes(x=years_exp,y=total_call,fill=sex))+geom_bar(stat="identity",position=position_dodge())+theme_bw()+labs(title = "Dans la ville C ")
+
+grid.arrange(pB, pC, ncol=1)
+
+```
+
+
+
+
+
+
+**analysis on the background of pre selected candidates** 
+
 Let's see if there is any link with pre selected candidates and their first_name : 
 
-[in general]
 
-[ Dans le cas des filles blanches ? ]
+Conclusion : il y a déjà du favoristisme rien que en regardant le CV - on choisit plus les candidats fille blancs avec prénoms ...
 
 
-#### 3. What is the commoun point of pre selected candidate regarding their profesional context ? 
 
-#### 4. What is the profil of the perfect candidat ? 
 
-So, after this analysis we can say that the ....
-white female - experience 0-20 and names ?
 
-#### 5. Prediction hypothesis 
+**Logistic Regression** 
 
 ```{r}
-# hypt perso context
+ 
 ```
 
 
-```{r}
-# hypt pro context
+**Classification tree** 
+
+We work on the selected candidates. At first we make sure to have clean data. We have the frequency of the modalities for the qualitative variables and some key figures for the quantitative variables. 
+
+```{r,results='hide'}
+data0=mydata%>%filter(call==1)
+data0=as.data.frame(data0)
+
+for (i in c("sex","race","city","kind","ownership","school_req","exp_min_req","call")) 
+{
+  data0[,i]=as.factor(data0[,i])
+}
+data0=select(data0,-c(X,first_name)) # not need 
+summary(data0)
+#str(data0)
+
 ```
 
+As with any model, we need to build the decision tree on a training dataset and then test it on a test dataset. The rpart library includes cross-validation but it is always better to calculate the performance on a sample that is not involved in the calculation. We therefore separate our data into 2 samples.
 
-#### 6. Prediction linearisation
+```{r}
+# splip into train and test data 
+split=sample.split(data0$sex,SplitRatio=0.75)
+cTrain=subset(data0,split == TRUE)
+cTest=subset(data0,split == FALSE)
+```
 
-#### 7. Prediction classification 
+We will now build the tree and prune it. 
 
-#### 8. Is Laura right ?
+```{r}
+#Construction of the tree
+tree1=rpart(sex ~ ., data = data0, method = "class", control=rpart.control(minsplit=5,cp=0))
+# minimization of the errors 
+plotcp(tree1)
+```
+The graph above displays the misclassification rate as a function of tree size. We try to minimize the error. We display the optimal cp and we prune the tree with the optimal cp , we then opt for an optimal tree of the form:
+
+```{r,warning=FALSE}
+##optimal cp
+print(tree1$cptable[which.min(tree1$cptable[,4]),1])
+#Pruning the tree with the optimal cp
+tree1.opt=prune(tree1,cp=tree1$cptablex[which.min(tree1$cptable[,4]),1])
+# tree optimal
+prp(tree1.opt,extra=1)
+fancyRpartPlot(tree1.opt)
+```
+
+Interpretation : 
+blabalbal
 
 
-## Analysing on no pre selected candidates 
+After obtaining our tree, we must test and validate the results with the test sample
+```{r}
+#Model prediction on test data
+cTest.predict=predict(tree1.opt,newdata=cTest,type = "class")
+#Confusion Matrix
+mc=table(cTest$sex,cTest.predict)
+mc
+#Classification error
+1.0-(mc[1,1]+mc[2,2])/sum(mc)
+#Prediction rate
+mc[2,2]/sum(mc[2,])
+```
+
+Our model seems correct we can start to analyze : 
+Blablaba
+
 
 
 ## Conclusions
 
+
+
+
 ## References 
+
+[1] Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G, Hayes A, Henry L, Hester J, Kuhn M,
+  Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C,
+  Woo K, Yutani H (2019). “Welcome to the tidyverse.” _Journal of Open Source Software_, *4*(43), 1686.
+  doi:10.21105/joss.01686 <https://doi.org/10.21105/joss.01686>.
+
+[2]
+[3]
+[4]
+[5]
+```{r,echo=FALSE,results='hide'}
+citation("tidyverse")
+```
+
 

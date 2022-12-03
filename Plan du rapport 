@@ -1,0 +1,33 @@
+# Brouillon - Plan - A revoir 
+  
+===> PB : Est ce qu'il y' a eu du favoritisme au cours de ces deux derniers mois dans le processus de recrutement de la ville de Alderaan et Bespin ? 
+  
+  ( entre parenthèse la data à exploiter )
+
+1. Analyse du resume ( candidate's resume) - Informations générale 
+
+a) Combien de candidats ont été présélectionné ? 
+b) Est ce qu'il y a du favoritisme en fonction du sexe,race,background? ( candidate's resume)
+c) cb dans chaque ville 
+
+Analyse ville A et compare avec B 
+
+2. Quel est le profil type d'un candidat sélectionné ? 
+a) d'un point de vue personel  ( candidate's context and environment )
+b) d'un point de vue professionel ( job position)
+
+3. Quel est le profil type d'entreprise où il y' a du favoritisme ? 
+a) ( employer)
+b) ( employer's context and environment )
+                       
+ Faire pour les candidat's pas sélectionés aussi ??
+
+4. Prédiction et amélioration
+a) Test d'hypothèse sur des échantillons de personnes 
+b) Régression linéaire 
+c) Régression logistic - arbre
+
+
+Conclusions 
+Favoritisme ou pas ? Sur qui ? Par qui ? Dans quel ville le plus ? 
+
