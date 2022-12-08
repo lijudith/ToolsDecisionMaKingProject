@@ -99,3 +99,76 @@ sens
 spec = table[1,2]/(table[1,2]+table[2,1])
 spec
 # Validation avec test 
+
+
+###############Rédigé 
+**Classification tree** 
+  
+  We work on the selected candidates. At first we make sure to have clean data. We have the frequency of the modalities for the qualitative variables and some key figures for the quantitative variables. 
+
+```{r,results='hide'}
+data0=mydata%>%filter(call==1)
+data0=as.data.frame(data0)
+
+for (i in c("sex","race","city","kind","ownership","school_req","exp_min_req","call")) 
+{
+  data0[,i]=as.factor(data0[,i])
+}
+data0=select(data0,-c(X,first_name)) # not need 
+#summary(data0)
+#str(data0)
+
+```
+
+As with any model, we need to build the decision tree on a training dataset and then test it on a test dataset. The rpart library includes cross-validation but it is always better to calculate the performance on a sample that is not involved in the calculation. We therefore separate our data into 2 samples.
+
+```{r}
+# splip into train and test data 
+split=sample.split(data0$race,SplitRatio=0.75)
+cTrain=subset(data0,split == TRUE)
+cTest=subset(data0,split == FALSE)
+```
+
+We will now build the tree and prune it. 
+
+```{r}
+#Construction of the tree
+tree1=rpart(sex ~., data = data0, method = "class", control=rpart.control(minsplit=5,cp=0))
+# minimization of the errors 
+plotcp(tree1)
+```
+The graph above displays the misclassification rate as a function of tree size. We try to minimize the error. We display the optimal cp and we prune the tree with the optimal cp , we then opt for an optimal tree of the form:
+  
+  ```{r,warning=FALSE}
+##optimal cp
+print(tree1$cptable[which.min(tree1$cptable[,4]),1])
+#Pruning the tree with the optimal cp
+tree1.opt=prune(tree1,cp=tree1$cptablex[which.min(tree1$cptable[,4]),1])
+# tree optimal
+prp(tree1.opt,extra=1)
+fancyRpartPlot(tree1.opt)
+```
+
+Interpretation : 
+  blabalbal
+
+
+After obtaining our tree, we must test and validate the results with the test sample
+```{r}
+#Model prediction on test data
+cTest.predict=predict(tree1.opt,newdata=cTest,type = "class")
+#Confusion Matrix
+mc=table(cTest$race,cTest.predict)
+mc
+#Classification error
+1.0-(mc[1,1]+mc[2,2])/sum(mc)
+#Prediction rate
+mc[2,2]/sum(mc[2,])
+```
+
+Our model seems correct we can start to analyze : 
+  Blablaba
+
+
+
+

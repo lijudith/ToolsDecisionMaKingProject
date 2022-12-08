@@ -4,30 +4,18 @@
   
   ( entre parenthèse la data à exploiter )
 
-1. Analyse du resume ( candidate's resume) - Informations générale 
+  <li> 1. General observations</li>
+      <li> a. General observations in Alderaan  </li>
+    <li>b. General observations in Bespin </li>
+    
+    <li> 2. Dicrimination about gender ? </li>
+    
+    <li>3. Dicrimination about backgroud ?  </li>
+    
+     <li> 4. Dicrimination about race ? </li>
 
-a) Combien de candidats ont été présélectionné ? 
-b) Est ce qu'il y a du favoritisme en fonction du sexe,race,background? ( candidate's resume)
-c) cb dans chaque ville 
-
-Analyse ville A et compare avec B 
-
-2. Quel est le profil type d'un candidat sélectionné ? 
-a) d'un point de vue personel  ( candidate's context and environment )
-b) d'un point de vue professionel ( job position)
-
-3. Quel est le profil type d'entreprise où il y' a du favoritisme ? 
-a) ( employer)
-b) ( employer's context and environment )
-                       
- Faire pour les candidat's pas sélectionés aussi ??
-
-4. Prédiction et amélioration
-a) Test d'hypothèse sur des échantillons de personnes 
-b) Régression linéaire 
-c) Régression logistic - arbre
-
+</ul>
 
 Conclusions 
-Favoritisme ou pas ? Sur qui ? Par qui ? Dans quel ville le plus ? 
+Il faut montrer qu'il y a du racisme et que les candidats avec le même résumé et tout sont uniquement jugé sur leurs couleurs de  peau 
 

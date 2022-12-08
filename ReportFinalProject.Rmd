@@ -13,9 +13,7 @@ getwd()
 
 One of the most common tasks in engineering management is to analyse vast quantities of data to understand what’s happening and taking optimal decisions based on our findings.
 
-Laura, the new CEO of The Institute of Equality, Diversity and Inclusiveness in region Corellia has contacted us to discuss what is happening in two cities (Alderaan and Bespin). After the hard work of data collection, the new CEO has been able to collect information about the selection processes over two months. This information contains data on the candidates and their environment, the job position, the recruiting company and its environment, and whether the candidate finally received a call back on his or her application.
-
-Laura is concerned about several issues. She believes that certain companies may be biased towards some candidates because of their gender, race, or even background they come from. Laura has therefore asked us to carry out an exploratory analysis.
+Laura, the new CEO of The Institute of Equality, Diversity and Inclusiveness in region Corellia has contacted us to discuss what is happening in two cities (Alderaan and Bespin). After the hard work of data collection, the new CEO has been able to collect information about the selection processes over two months. This information contains data on the candidates and their environment, the job position, the recruiting company and its environment, and whether the candidate finally received a call back on his or her application. Laura has therefore asked us to carry out an exploratory analysis.
 
 
 ## Setup the software 
@@ -54,8 +52,6 @@ mydata=read.csv("data_set.csv")%>%tibble()
 
 In this set data of data, we have information about : candidate's resume , if the candidate was pre-selected or not , candidate's context and environment, the job position,the employer and the employer's context and environment .
 
-### Cleaning of data 
-
 We are going to check if we have loaded all information from the file.
 
 ```{r}
@@ -84,34 +80,63 @@ Theses cases are right.
 
 In order to give an explanation to Laura , let's analyse we are going to answer this following questions: 
 
-## A revoir 
+## PLan 
 
 <ul>
-  <li>1.How many are pre-selected </li>
-  <li>2.What is the common point of pre selected candidate regarding their personal context ? </li>
-  <li>3.What is the commoun point of pre selected candidate regarding their profesional context ? </li>
-  <li>4.What is the profil of the perfect candidat ? </li>
-  <li>5.Prediction hypothesis </li>
-  <li>6.Prediction linearisation</li>
-  <li>7.Prediction classification </li>
-  <li>8.Is Laura right ?</li>
+  <li> 1. General observations</li>
+      <li> a. General observations in Alderaan  </li>
+    <li>b. General observations in Bespin </li>
+    <li> 2. Dicrimination about gender ? </li>
+    <li>3. Dicrimination about backgroud ?  </li>
+     <li> 4. Dicrimination about race ? </li>
+
 </ul>
 
 
-#### 1. Observations regarding the candidate's resume 
+Laura is concerned about several issues. She believes that certain companies may be biased towards some candidates because of their gender, race, or even background they come from. Let's study this set of data . 
 
-###### a) How many candidates are pre-selected ? 
+#### 1. General observation 
 
-We have 392 candidates who are pre selected on 4870 candidates. 
+We have 392 candidates who are pre selected on 4870 candidates. So, only 8% are called back ... 
 
 ```{r}
 Preselected=mydata%>%filter(call==1)
 nrow(Preselected) # number of pre selected candidates
 ```
 
+
+
+###### a. General observations in Alderaan 
+
+###### b. General observation in Bespin 
+
+#### 2. Discrimination about gender ?  
+
+There is more female pre selected: 309 rather than men: 83 as we can see on the graph bellow :
+
+```{r}
+FPreselected=Preselected%>%filter(sex=="f")
+MPreselected=Preselected%>%filter(sex=="m")
+ggplot(Preselected,aes(sex,group=sex,color=sex))+geom_bar()+labs(title = "Comparaison between pre selected men and female ")+theme_bw() 
+```
+By the same way we can see that on pre selected candidates there is more white people rather than black people between men and women pre selected candidates. And between women , we observe the same case. So, the majority of pre selected candidates are white females .
+```{r}
+# Comparaison race Pre selected candidates
+p4=ggplot(Preselected,aes(race,group=race,color=race))+geom_bar()+labs(title = "Comparaison race between pre selected candidates")+theme_bw()
+# Comparaison race Pre selected candidates between women
+p5=ggplot(FPreselected,aes(race,group=race,color=race))+geom_bar()+labs(title = "Comparaison race between womens pre selected candidates")+theme_bw()
+grid.arrange(p4, p5, ncol=1)
+```
+
+Is it the same case between both cities? 
+
+#### 3. Discrimination about backgroud ? 
+
+###### a) Is there any discrimination regarding candidate's background ? 
+
 First, we want to know if there is any correlation between pre selected candidates and the different variables. Regarding information on candidate's resume , there is some correlation between the applicant who was called back ( Call ) and the variables : years_exp,volunteer,special_skills.
 
-```{r,message=FALSE,warning=False}
+```{r,message=FALSE}
 mydataCor=mydata%>%select(-(first_name:race))%>%select((education:call))
 
 cormat = round(cor(mydataCor),2) # Calculate the Correlation Matrix
@@ -144,160 +169,165 @@ p3=ggplot(mydata, aes(x=years_exp, y=call)) + geom_bar(stat="identity", color="g
 grid.arrange(p1, p2, p3,ncol=2)
 ```
 
-Let's see what is the common point on the 392 candidates on their resume who are pre selected regarding their : sex,race and first_name. 
+###### b) Is there any discrimination regarding candidate's resume quality  ? 
 
-###### a) Acoording to Laura believes is their some biasement towards some candidates because of their gender, race or background ? 
+Maybe they discriminate regarding candidate's resume quality ? In order to determine the candidate's resume quality , we take an acount : this variables . 
 
-**analysis on the gender of pre selected candidates** 
-There is more female pre selected:309 rather than men:83 as we can see on the graph bellow :
+We consider that the higher the score, the higher the quality of the resume.
 
-```{r}
-FPreselected=Preselected%>%filter(sex=="f")
-MPreselected=Preselected%>%filter(sex=="m")
-ggplot(Preselected,aes(sex,group=sex,color=sex))+geom_bar()+labs(title = "Comparaison between pre selected men and female ")+theme_bw() 
-```
+Conclusion : At the level of the background no difference - c'est mieux de mettre en évidence la race ? 
 
-**analysis on the race of pre selected candidates** 
-By the same way we can see that on pre selected candidates there is more white people rather than black people between men and women pre selected candidates. And between women , we observe the same case. So, the majority of pre selected candidates are white females. 
+###### c) Is there any discrimination regarding candidate's first names  ? 
 
 ```{r}
-# Comparaison race Pre selected candidates
-p4=ggplot(Preselected,aes(race,group=race,color=race))+geom_bar()+labs(title = "Comparaison race between pre selected candidates")+theme_bw()
-# Comparaison race Pre selected candidates between women
-p5=ggplot(FPreselected,aes(race,group=race,color=race))+geom_bar()+labs(title = "Comparaison race between womens pre selected candidates")+theme_bw()
-grid.arrange(p4, p5, ncol=1)
+ggplot(mydata, aes(first_name)) + geom_bar(aes(y = stat(count))) + coord_flip()
 ```
 
+#### 1. Discrimination about race ? 
+
+```{r}
+library(vtree)
+vtree(mydata,c("call","race"),horiz = FALSE)
+```
+
+
+The prediction tree above shows us how all of the information is broken down. We start with the 4870 candidates, and we can then see the percentage of candidates that were called back – only 8%! The distribution of that 8% is then split between the black and white pre selected candidates . All of the data so far shows that there should not be a bias between call backs between the two groups, but once we see the breakdown, we see that white receive more call backs ( 60%) .
+
+We’ll be making a small comparison of the frequency of years of experience for the applicant in both cities, we see that most candidates have 2 to 8 years of experience. And since in general white people have more work experience than black people, maybe this has something to do with why white receive more call backs. Let's see if we are in this case : 
 
 ```{r,warning=FALSE,message=FALSE}
-# Genre dans les deux filles années d'expériences appel 
 
-dataB=mydata%>%select(city,call,sex,years_exp)%>%filter(city=='b') # city b 
-dataB=dataB%>%group_by(years_exp,sex)
+dataB=mydata%>%select(city,call,race,years_exp)%>%filter(city=='b') # city b 
+dataB=dataB%>%group_by(years_exp,race)
 dataB=dataB%>%summarise(total_call=sum(call))
 
-pB= dataB%>%ggplot(aes(x=years_exp,y=total_call,fill=sex))+geom_bar(stat="identity",position=position_dodge())+theme_bw()+labs(title = "Dans la ville B ")
+pB= dataB%>%ggplot(aes(x=years_exp,y=total_call,fill=race))+geom_bar(stat="identity",position=position_dodge())+theme_bw()+labs(title = "Repatition of pre selected candidates accordind their years of experiences in Bespin ")
 
-dataC=mydata%>%select(city,call,sex,years_exp)%>%filter(city=='c') # city c
-dataC=dataC%>%group_by(years_exp,sex)
+dataC=mydata%>%select(city,call,race,years_exp)%>%filter(city=='c') # city c
+dataC=dataC%>%group_by(years_exp,race)
 dataC=dataC%>%summarise(total_call=sum(call))
 
-pC=dataC%>%ggplot(aes(x=years_exp,y=total_call,fill=sex))+geom_bar(stat="identity",position=position_dodge())+theme_bw()+labs(title = "Dans la ville C ")
+pC=dataC%>%ggplot(aes(x=years_exp,y=total_call,fill=race))+geom_bar(stat="identity",position=position_dodge())+theme_bw()+labs(title = "Repatition of pre selected candidates accordind their years of experiences Alderaan ")
 
 grid.arrange(pB, pC, ncol=1)
 
 ```
 
-
-
-
-
-
-**analysis on the background of pre selected candidates** 
-
-Let's see if there is any link with pre selected candidates and their first_name : 
-
-
-Conclusion : il y a déjà du favoristisme rien que en regardant le CV - on choisit plus les candidats fille blancs avec prénoms ...
-
-
-
-
-
-**Logistic Regression** 
-
 ```{r}
- 
+ggplot(mydata, aes(x=race, y=years_exp)) + geom_point(alpha = .2, position = "jitter", color = "pink") + geom_boxplot(alpha = 0) + ggtitle("Race vs Years_exp Boxplot") + xlab("Race") + ylab("Experience")
+```
+The boxplot above confirms out initial findings, that there isn’t a definitive difference between the two race groups. We have to look at other criteria and see where the difference lies, or is there an non-data reason for bias towards white pre selected candidates?
+
+We can study more in details this approach : 
+
+<u>1-Study of the difference between black and white to the preselection</u>
+
+Before starting, our analysis it's important to count how many black and whites do we have, to be sure that we compare the same things.
+```{r}
+nrow(mydata%>%filter(race=="b"))
+nrow(mydata%>%filter(race=="w"))
 ```
 
+We have the same number of blacks and whites persons.
 
-**Classification tree** 
+<u> 1.A study of the education of the different race</u>
 
-We work on the selected candidates. At first we make sure to have clean data. We have the frequency of the modalities for the qualitative variables and some key figures for the quantitative variables. 
+Through this part, we try to study the studies of the different races and to see if there is a race which has a better level of study or not than another one.
+To do this, we are going to carry out a T.Test to see if the study averages are identical.
+H0: The education means are the same at 5%.
+H1: The means are not the same.
 
-```{r,results='hide'}
-data0=mydata%>%filter(call==1)
-data0=as.data.frame(data0)
+```{r}
+myB<-mydata%>%filter(race=="b")
+myW<-mydata%>%filter(race=="w")
+## Testing hypothesis
+t.test(myB$education, myW$education, alternative = "two.sided", paired = TRUE, var.equal = TRUE, conf.level = 0.95)
+```
 
-for (i in c("sex","race","city","kind","ownership","school_req","exp_min_req","call")) 
-{
-  data0[,i]=as.factor(data0[,i])
+We realize that the "p-value">0.05 so we can accept H0, so both races have on average the same level of study. We can see it below with this graph, where we have in ordinate the number of students with the levels of study. We can see that they have about the same level of study. So the level of study being the same, it should not be a criterion for differences on the selections.
+
+```{r}
+mydata %>% ggplot(aes(x=education, fill=race)) + geom_histogram( position=position_dodge())
+```
+
+<u> 1-B Study of the experience of different race </u>
+Through this part, we try to determine if there is a difference between the number of years of the different breeds. To do this, we will look at whether the number of years of experience and the number of experiences are related. Then, we will look through a T.Test if the average of the experiences of the whites is equal to that of the blacks 
+First we will do a regression to see if the number of experiences and the number of years of experience are related. 
+For this, we define the following hypotheses.
+H0: the two variables are related
+H1: They are not related 
+```{r}
+mtcars03 <- lm(n_jobs ~ years_exp, data=mydata)
+summary(mtcars03)
+ggplot(mydata, aes(n_jobs, years_exp)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw()
+```
+
+We see that pr<0.05 so we validate H0 so we can say that the number of experiences and the number of years of experience are linked
+In order to simplify, we will use only the number of years of experience. In our next test, we will see if the number of years of experience is on average equal for both races.
+With : 
+H0: The number of experiences means are the same at 5%.
+H1:  The number of experiences means are not the same.
+```{r}
+## Testing hypothesis
+t.test(myB$years_exp, myW$years_exp, alternative = "two.sided", paired = TRUE, var.equal = TRUE, conf.level = 0.95)
+```
+We realize that the p-value>0.05 so the average of experience of both breeds is the same.
+Also, we can see below that there are also the same repartition in number of jobs for blacks and white.  The number of experiments will not be a reason to select more one race or another. 
+
+```{r}
+mydata %>% ggplot(aes(x=n_jobs, fill=race)) + geom_histogram( position=position_dodge())
+```
+
+<u>1-C Repartition of the race per names</u>
+Through this patient, we want to see if a name is carried by a race or if a white and a black can have the same first name. 
+```{r}
+myDF1<-data_frame(mydata$first_name,mydata$race,0)
+colnames(myDF1)<-c("first_name","race","x")
+row<- nrow(mydata)
+for (i in 1:row){
+  dataD<-mydata %>% filter(first_name==mydata[i,13] & race==mydata[i,15])
+  myDF1[i,3]<-nrow(dataD)
 }
-data0=select(data0,-c(X,first_name)) # not need 
-summary(data0)
-#str(data0)
+dataB<-myDF1%>%group_by(first_name,race)%>%summarize(number=mean(x))
 
+dataB %>% ggplot(aes(x=first_name, y=number, fill=race)) + geom_bar(stat="identity", position=position_dodge())+theme(axis.text.x = element_text(angle=90))
 ```
 
-As with any model, we need to build the decision tree on a training dataset and then test it on a test dataset. The rpart library includes cross-validation but it is always better to calculate the performance on a sample that is not involved in the calculation. We therefore separate our data into 2 samples.
+We realize that there are no blacks and whites who have the same first name. The first name can therefore be a discriminating factor.
+
+<u>1-D study of the pre-selected persons</u>
+We want to see if whites are more often pre-selected than blacks.
+For that, we have realized a T.Test with as hypothesis: 
+H0: whites are more often called than blacks within 5%.
+H1: it is the opposite of H0
 
 ```{r}
-# splip into train and test data 
-split=sample.split(data0$sex,SplitRatio=0.75)
-cTrain=subset(data0,split == TRUE)
-cTest=subset(data0,split == FALSE)
+t.test(myB$call, myW$call, alternative = "greater", paired = FALSE, var.equal = TRUE, conf.level = 0.95)
+
 ```
 
-We will now build the tree and prune it. 
-
-```{r}
-#Construction of the tree
-tree1=rpart(sex ~ ., data = data0, method = "class", control=rpart.control(minsplit=5,cp=0))
-# minimization of the errors 
-plotcp(tree1)
-```
-The graph above displays the misclassification rate as a function of tree size. We try to minimize the error. We display the optimal cp and we prune the tree with the optimal cp , we then opt for an optimal tree of the form:
-
-```{r,warning=FALSE}
-##optimal cp
-print(tree1$cptable[which.min(tree1$cptable[,4]),1])
-#Pruning the tree with the optimal cp
-tree1.opt=prune(tree1,cp=tree1$cptablex[which.min(tree1$cptable[,4]),1])
-# tree optimal
-prp(tree1.opt,extra=1)
-fancyRpartPlot(tree1.opt)
+We see that p.Value>0,05 so on average whites are more often pre-selected than blacks. in fact, 9.6% of whites were pre-selected against 6.5% of blacks  
+```{R}
+test1<-mydata%>%group_by(education, race)%>%summarise(pre_selected_mean=mean(call))
+test1 %>% ggplot(aes(x=education, y=pre_selected_mean, fill=race)) + geom_bar(stat="identity", position=position_dodge())
 ```
 
-Interpretation : 
-blabalbal
+Moreover, when we look at the distribution of the preselected, we realize that blacks are more often selected when they have 0 or 1 of education but then it is very largely the whites who are preselected.
 
-
-After obtaining our tree, we must test and validate the results with the test sample
-```{r}
-#Model prediction on test data
-cTest.predict=predict(tree1.opt,newdata=cTest,type = "class")
-#Confusion Matrix
-mc=table(cTest$sex,cTest.predict)
-mc
-#Classification error
-1.0-(mc[1,1]+mc[2,2])/sum(mc)
-#Prediction rate
-mc[2,2]/sum(mc[2,])
-```
-
-Our model seems correct we can start to analyze : 
-Blablaba
-
-
-
-## Conclusions
+<u>1-E Conclusion</u>
+We realize that whites are more advantaged than blacks. In fact, despite the fact that blacks and whites have the same level of education and the same number of jobs, whites are called much more often. This could be explained by the fact that the first names are either given to whites or blacks, which makes it easier to discriminate.
 
 
 
 
-## References 
 
-[1] Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G, Hayes A, Henry L, Hester J, Kuhn M,
-  Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C,
-  Woo K, Yutani H (2019). “Welcome to the tidyverse.” _Journal of Open Source Software_, *4*(43), 1686.
-  doi:10.21105/joss.01686 <https://doi.org/10.21105/joss.01686>.
 
-[2]
-[3]
-[4]
-[5]
-```{r,echo=FALSE,results='hide'}
-citation("tidyverse")
-```
+
+
+
+
 
 
